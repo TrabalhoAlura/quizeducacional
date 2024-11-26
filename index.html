@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Educacional com IA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url() no-repeat center center fixed; /* Imagem de fundo */
+            background-size: cover; /* A imagem cobre toda a tela */
+            color: #333;
+            height: 100vh; /* Garante que a altura ocupe toda a tela */
+        }
+        header {
+            background-color: rgba(58, 110, 165, 0.8); /* Cor de fundo com transparência */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin: 20px;
+        }
+        main {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.8); /* Fundo branco translúcido */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        h2, h3 {
+            margin-top: 0;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #3a6ea5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #345b8d;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #restart-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Quiz Educacional</h1>
+</header>
+
+<main>
+    <h2>Escolha uma matéria:</h2>
+    <div id="subject-buttons">
+        <button onclick="chooseSubject('Português')">Português</button>
+        <button onclick="chooseSubject('Matemática')">Matemática</button>
+        <button onclick="chooseSubject('Ciências')">Ciências</button>
+        <button onclick="chooseSubject('História')">História</button>
+        <button onclick="chooseSubject('Geografia')">Geografia</button>
+    </div>
+
+    <div id="question-count-container" style="display: none;">
+        <h3>Quantas perguntas você deseja responder?</h3>
+        <button onclick="startQuiz(3)">3 Perguntas</button>
+        <button onclick="startQuiz(5)">5 Perguntas</button>
+        <button onclick="startQuiz(10)">10 Perguntas</button>
+    </div>
+
+    <div id="quiz-container" style="display: none;">
+        <div class="question" id="question">Pergunta será exibida aqui</div>
+        <ul class="options" id="options"></ul>
+        <button id="next-btn" onclick="nextQuestion()">Próxima Pergunta</button>
+    </div>
+
+    <div class="result" id="result" style="display: none;">
+        <button id="restart-btn" onclick="restartQuiz()">Voltar à Página Inicial</button>
+    </div>
+</main>
+
+<script>
+    const questionBank = {
+        Português: [
+            { question: "O que é um sujeito?", options: ["Parte da oração que indica quem pratica a ação", "Uma figura de linguagem", "Um tipo de verbo"], correct: 0 },
+            { question: "Qual é o plural de 'cidadão'?", options: ["Cidadões", "Cidadãos", "Cidadãs"], correct: 1 },
+            { question: "O que é um advérbio?", options: ["Palavra que indica circunstância", "Palavra que caracteriza substantivos", "Conjunção"], correct: 0 },
+            { question: "Qual é o significado da palavra 'empatia'?", options: ["Capacidade de se colocar no lugar do outro", "Senso de responsabilidade", "Habilidade de argumentação"], correct: 0 },
+            { question: "Qual a função da vírgula na frase 'Eu gosto de estudar, comer e viajar'?", options: ["Separar elementos de uma lista", "Indicar pausas longas", "Separar sujeito e predicado"], correct: 0 },
+            { question: "O que é uma oração subordinada?", options: ["Oração que depende de outra para ter sentido", "Oração que contém uma interjeição", "Oração que faz uma pergunta"], correct: 0 },
+            { question: "O que é uma metáfora?", options: ["Comparação implícita", "Substituição de um verbo", "Uso de palavras com duplo sentido"], correct: 0 },
+            { question: "Qual é o adjetivo na frase 'O livro interessante foi lido'?", options: ["Interessante", "Foi", "Lido"], correct: 0 },
+            { question: "O que é um sujeito oculto?", options: ["Sujeito que não aparece explicitamente na frase", "Sujeito que está no início da frase", "Sujeito que é sempre plural"], correct: 0 },
+            { question: "Qual a diferença entre 'porque' e 'por que'?", options: ["'Porque' é causal, e 'por que' é interrogativo", "'Porque' é interrogativo, e 'por que' é causal", "Não há diferença"], correct: 0 }
+        ],
+        Matemática: [
+            { question: "Quanto é 7 x 8?", options: ["54", "56", "58"], correct: 1 },
+            { question: "Qual é a fórmula da área de um triângulo?", options: ["base x altura / 2", "lado²", "base + altura"], correct: 0 },
+            { question: "Quanto é 2³?", options: ["6", "8", "9"], correct: 1 },
+            { question: "O que é um número primo?", options: ["Número divisível por 1 e por ele mesmo", "Número par", "Número que termina em 5"], correct: 0 },
+            { question: "Qual é a raiz quadrada de 64?", options: ["6", "8", "10"], correct: 1 },
+            { question: "Quanto é 10 + 15 x 2?", options: ["30", "40", "50"], correct: 1 },
+            { question: "Qual é a soma dos ângulos internos de um triângulo?", options: ["90°", "180°", "360°"], correct: 1 },
+            { question: "Quanto é 5²?", options: ["25", "30", "35"], correct: 0 },
+            { question: "O que é uma progressão aritmética?", options: ["Sequência de números onde a diferença entre termos consecutivos é constante", "Sequência onde os termos aumentam de forma geométrica", "Sequência que varia de forma aleatória"], correct: 0 },
+            { question: "Quanto é 150 ÷ 3?", options: ["50", "60", "70"], correct: 1 }
+        ],
+        Ciências: [
+            { question: "Qual é a função do coração?", options: ["Bombear sangue", "Produzir oxigênio", "Filtrar o sangue"], correct: 0 },
+            { question: "O que é fotossíntese?", options: ["Produção de energia pela luz", "Respiração das plantas", "Transformação de oxigênio em CO2"], correct: 0 },
+            { question: "Qual é o estado da matéria da água a 100°C?", options: ["Sólido", "Líquido", "Gasoso"], correct: 2 },
+            { question: "O que é clorofila?", options: ["Pigmento verde nas plantas", "Tipo de célula", "Hormônio"], correct: 0 },
+            { question: "O que são as células-tronco?", options: ["Células que podem se transformar em qualquer tipo celular", "Células que transportam oxigênio", "Células que produzem hormônios"], correct: 0 },
+            { question: "Qual é o principal órgão do sistema nervoso?", options: ["Coração", "Cérebro", "Fígado"], correct: 1 },
+            { question: "Qual é o elemento químico essencial para a respiração celular?", options: ["Oxigênio", "Nitrogênio", "Hidrogênio"], correct: 0 },
+            { question: "Onde ocorre a digestão dos alimentos?", options: ["Boca e estômago", "Estômago e intestino", "Boca e fígado"], correct: 1 },
+            { question: "O que é o DNA?", options: ["Ácido que armazena informações genéticas", "Hormônio de crescimento", "Célula", "Sistema nervoso"], correct: 0 },
+            { question: "O que é o ciclo da água?", options: ["Processo de evaporação e precipitação", "Reprodução das plantas", "Transformação da água em gás"], correct: 0 }
+        ],
+        História: [
+            { question: "Quem foi o primeiro presidente do Brasil?", options: ["Dom Pedro I", "Marechal Deodoro da Fonseca", "Getúlio Vargas"], correct: 1 },
+            { question: "Qual evento marcou o início da Idade Média?", options: ["Queda do Império Romano", "Descobrimento da América", "Revolução Francesa"], correct: 0 },
+            { question: "Quem foi Napoleão Bonaparte?", options: ["Imperador da França", "Rei da Inglaterra", "General Romano"], correct: 0 },
+            { question: "Onde ocorreu a Revolução Industrial?", options: ["Inglaterra", "França", "Estados Unidos"], correct: 0 },
+            { question: "O que foi a Guerra Fria?", options: ["Conflito entre os EUA e a URSS", "Conflito entre países da Europa", "Guerras entre monarquias europeias"], correct: 0 },
+            { question: "Quem foi Tiradentes?", options: ["Herói da Inconfidência Mineira", "Presidente do Brasil", "Militar romano"], correct: 0 },
+            { question: "Quando foi a Proclamação da República?", options: ["1889", "1500", "1930"], correct: 0 },
+            { question: "O que foi a Inconfidência Mineira?", options: ["Movimento contra a monarquia portuguesa", "Movimento de independência do Brasil", "Conquista de território", "Invasão de minas argentinas"], correct: 0 },
+            { question: "Quem foi Karl Marx?", options: ["Filósofo e economista", "Imperador Romano", "Rei da Alemanha"], correct: 0 },
+            { question: "O que foi a Revolução Francesa?", options: ["Revolta popular contra a monarquia", "Revolução para a independência dos EUA", "Revolução para implantar o socialismo"], correct: 0 }
+        ],
+        Geografia: [
+            { question: "Qual é a capital do Brasil?", options: ["São Paulo", "Brasília", "Rio de Janeiro"], correct: 1 },
+            { question: "Qual é o maior continente?", options: ["Ásia", "América", "África"], correct: 0 },
+            { question: "Onde está localizado o deserto do Saara?", options: ["África", "Ásia", "América do Sul"], correct: 0 },
+            { question: "O que é uma bacia hidrográfica?", options: ["Área de drenagem de um rio", "Formação de montanhas", "Área agrícola"], correct: 0 },
+            { question: "Onde fica o Rio Amazonas?", options: ["Na Ásia", "Na América do Sul", "Na Europa"], correct: 1 },
+            { question: "Qual é o maior oceano?", options: ["Atlântico", "Índico", "Pacífico"], correct: 2 },
+            { question: "O que é o aquecimento global?", options: ["Aquecimento da terra devido a gases poluentes", "Aquecimento causado pelo sol", "Alteração das estações do ano"], correct: 0 },
+            { question: "Onde se encontra a Cordilheira dos Andes?", options: ["Na América do Sul", "Na África", "Na Europa"], correct: 0 },
+            { question: "Qual é a maior floresta tropical do mundo?", options: ["Floresta Amazônica", "Floresta do Congo", "Floresta da Noruega"], correct: 0 },
+            { question: "Qual é o clima predominante no Brasil?", options: ["Tropical", "Polar", "Mediterrâneo"], correct: 0 }
+        ]
+    };
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function chooseSubject(subject) {
+        currentQuestions = questionBank[subject];
+        document.getElementById('subject-buttons').style.display = 'none';
+        document.getElementById('question-count-container').style.display = 'block';
+    }
+
+    function startQuiz(numQuestions) {
+        currentQuestions = [...currentQuestions].sort(() => Math.random() - 0.5).slice(0, numQuestions);
+        currentQuestionIndex = 0;
+        score = 0;
+
+        document.getElementById('question-count-container').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'block';
+
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const current = currentQuestions[currentQuestionIndex];
+
+        questionElement.textContent = `Pergunta ${currentQuestionIndex + 1}: ${current.question}`;
+        optionsElement.innerHTML = '';
+
+        current.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<button onclick="checkAnswer(${index})">${option}</button>`;
+            optionsElement.appendChild(li);
+        });
+    }
+
+    function checkAnswer(selected) {
+        const current = currentQuestions[currentQuestionIndex];
+        if (selected === current.correct) {
+            score++;
+        }
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-container').style.display = 'none';
+        const resultElement = document.getElementById('result');
+        resultElement.style.display = 'block';
+        resultElement.innerHTML = `
+            <p>Parabéns! Você acertou ${score} de ${currentQuestions.length} perguntas!</p>
+            <button id="restart-btn" onclick="restartQuiz()">Voltar à Página Inicial</button>
+        `;
+    }
+
+    function restartQuiz() {
+        document.getElementById('subject-buttons').style.display = 'block';
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('question-count-container').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
